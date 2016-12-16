@@ -64,6 +64,9 @@ public class MainActivity extends Activity implements OnClickListener  {
         resText = (TextView) findViewById(R.id.textView2);
         answerText = (TextView) findViewById(R.id.textView3);
 
+        mText.setText("hejhej");
+
+
 
         sr = SpeechRecognizer.createSpeechRecognizer(this);
         sr.setRecognitionListener(new Lis());
