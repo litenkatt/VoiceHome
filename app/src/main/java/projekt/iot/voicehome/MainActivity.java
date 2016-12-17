@@ -68,10 +68,8 @@ public class MainActivity extends Activity implements OnClickListener {
 //        String ret = "hello";
             useStrings(ret);
             Log.d(TAG, networkInfo.toString());
-
         } else {
             resText.setText("lol internet fail");
-
         }
 //}catch (ConnectException e) {
 //
