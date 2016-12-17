@@ -276,7 +276,7 @@ public class MainActivity extends Activity implements OnClickListener {
                         light2 = true;
                         run("tdtool --on 2");
                         answerText.setText("Light 2 set to on");
-                    } 
+                    }
                 }
             }
 
