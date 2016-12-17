@@ -1,59 +1,49 @@
 package projekt.iot.voicehome;
 
-import android.os.AsyncTask;
-import android.os.Bundle;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Bundle;
 import android.os.StrictMode;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.ConnectException;
 import java.util.ArrayList;
-import android.util.Log;
 
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.Session;
 import ch.ethz.ssh2.StreamGobbler;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 
-
-
-public class MainActivity extends Activity implements OnClickListener  {
-
+public class MainActivity extends Activity implements OnClickListener {
 
     private TextView mText;
     private TextView resText;
     private TextView answerText;
     private SpeechRecognizer sr;
     private static final String TAG = "SpeechStuff"; //bara för logen
-
-    private Switch btnToggleLight1 = null;
-    private Switch btnToggleLight2 = null;
+//    private Switch btnToggleLight1 = null;
+//    private Switch btnToggleLight2 = null;
 
     private String temp = null;
-
     private boolean light1 = false;
     private boolean light2 = true;
-    private ArrayList <String> voiceData = new ArrayList<String>();
+    private ArrayList<String> voiceData = new ArrayList<String>();
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -63,100 +53,85 @@ public class MainActivity extends Activity implements OnClickListener  {
         mText = (TextView) findViewById(R.id.textView1);
         resText = (TextView) findViewById(R.id.textView2);
         answerText = (TextView) findViewById(R.id.textView3);
-
         mText.setText("hejhej");
-
-
 
         sr = SpeechRecognizer.createSpeechRecognizer(this);
         sr.setRecognitionListener(new Lis());
 
 //try{
-    //Kod som ska kolla om det finns internet innan den försöker ansluta
-    ConnectivityManager connMgr = (ConnectivityManager)
-            getSystemService(Context.CONNECTIVITY_SERVICE);
-    NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-    if (networkInfo != null && networkInfo.isConnected()) {
-        String ret = run("tdtool -l"); //sends tdtool -l to the run() method, which return a string
+        //Kod som ska kolla om det finns internet innan den försöker ansluta
+        ConnectivityManager connMgr = (ConnectivityManager)
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            String ret = run("tdtool -l"); //sends tdtool -l to the run() method, which return a string
 //        String ret = "hello";
-        useStrings(ret);
-        Log.d(TAG,  networkInfo.toString());
+            useStrings(ret);
+            Log.d(TAG, networkInfo.toString());
 
-    } else {
-        resText.setText("lol internet fail");
+        } else {
+            resText.setText("lol internet fail");
 
-    }
+        }
 //}catch (ConnectException e) {
 //
 //}
-
 
 
     }
 
     //----------------------------------------------------------------------------------------------
 
-    class Lis implements RecognitionListener
-    {
-        public void onReadyForSpeech(Bundle params)
-        {
+    class Lis implements RecognitionListener {
+        public void onReadyForSpeech(Bundle params) {
             Log.d(TAG, "onReadyForSpeech");
         }
-        public void onBeginningOfSpeech()
-        {
+
+        public void onBeginningOfSpeech() {
             Log.d(TAG, "onBeginningOfSpeech");
         }
-        public void onRmsChanged(float rmsdB)
-        {
+
+        public void onRmsChanged(float rmsdB) {
             Log.d(TAG, "onRmsChanged");
         } //ljudnivån ändras
-        public void onBufferReceived(byte[] buffer)
-        {
+
+        public void onBufferReceived(byte[] buffer) {
             Log.d(TAG, "onBufferReceived");
         }
-        public void onEndOfSpeech()
-        {
+
+        public void onEndOfSpeech() {
             Log.d(TAG, "onEndofSpeech");
         }
-        public void onError(int error)
-        {
-            Log.d(TAG,  "error " +  error);
+
+        public void onError(int error) {
+            Log.d(TAG, "error " + error);
             mText.setText("error " + error);
         }
-        public void onResults(Bundle results)
-        {
+
+        public void onResults(Bundle results) {
             String str = "";
             Log.d(TAG, "onResults " + results);
 
             voiceData = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION); //skapar en arraylist med möjliga resultat där det första är mest troligt
-            Log.d(TAG,  voiceData.toString());
-
-
+            Log.d(TAG, voiceData.toString());
 
             resText.setText(voiceData.toString());
 
 //            Bygger ihop alla möjliga ord till en string
-            for (int i = 0; i < voiceData.size(); i++)
-            {
+            for (int i = 0; i < voiceData.size(); i++) {
                 Log.d(TAG, "result " + voiceData.get(i));
-
                 str += voiceData.get(i);
                 Log.d(TAG, "result " + str);
-
-
             }
             useVoiceInput(str);
-
-
-            mText.setText("results: "+String.valueOf(voiceData.size()));
-
+            mText.setText("results: " + String.valueOf(voiceData.size()));
         }
-        public void onPartialResults(Bundle partialResults)
-        {
+
+        public void onPartialResults(Bundle partialResults) {
             Log.d(TAG, "onPartialResults");
         }
-        public void onEvent(int eventType, Bundle params)
-        {
+
+        public void onEvent(int eventType, Bundle params) {
             Log.d(TAG, "onEvent " + eventType);
         }
     }
@@ -166,13 +141,12 @@ public class MainActivity extends Activity implements OnClickListener  {
     public void onClick(View v) {
         mText.setText("Speak now!");
 
-        if (v.getId() == R.id.btn_speak)
-        {
+        if (v.getId() == R.id.btn_speak) {
             Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-            intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,"voice.recognition.test");
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, "voice.recognition.test");
 
-            intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,5);
+            intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
             sr.startListening(intent);
         }
     }
@@ -188,7 +162,6 @@ public class MainActivity extends Activity implements OnClickListener  {
             //code to avoid Network error massage
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             StrictMode.setThreadPolicy(policy);
-            //
             Connection conn = new Connection(hostname); //init tcp/ip connection to SSH
             conn.connect(); //start connection to hostname
             Boolean isAuthenticated = conn.authenticateWithPassword(username, password);
@@ -251,70 +224,66 @@ public class MainActivity extends Activity implements OnClickListener  {
 
     public void useVoiceInput(String str) {
 
-
-            if (str.contains("light")) {
-                if (str.contains("is")) {
-                    if (str.contains("one")) {
-                        if (light1) {
-                            if (str.contains("on")|| str.contains("own")) {
-                                answerText.setText("Yes");
-                            } else if (str.contains("off")) {
-                                answerText.setText("No");
-                            }
-                        } else {
-                            if (str.contains("off") || str.contains("of")) {
-                                answerText.setText("Yes");
-                            } else if (str.contains("on")) {
-                                answerText.setText("No");
-                            }
+        if (str.contains("light")) {
+            if (str.contains("is")) {
+                if (str.contains("one")) {
+                    if (light1) {
+                        if (str.contains("on") || str.contains("own")) {
+                            answerText.setText("Yes");
+                        } else if (str.contains("off")) {
+                            answerText.setText("No");
                         }
-
-                    } else if (str.contains("two") || str.contains("2") || str.contains("to")) {
-                        if (light2) {
-                            if (str.contains("on")|| str.contains("own")) {
-                                answerText.setText("Yes");
-                            } else if (str.contains("off")) {
-                                answerText.setText("No");
-                            }
-                        } else {
-                            if (str.contains("off") || str.contains("of")) {
-                                answerText.setText("Yes");
-                            } else if (str.contains("on")) {
-                                answerText.setText("No");
-                            }
+                    } else {
+                        if (str.contains("off") || str.contains("of")) {
+                            answerText.setText("Yes");
+                        } else if (str.contains("on")) {
+                            answerText.setText("No");
                         }
                     }
-                } else {
-                    if (str.contains("one") || str.contains("1")) {
-                        if (str.contains("off") || str.contains("of")){
-                            light1 = false;
-                            run("tdtool --off 1");
-                            answerText.setText("Light 1 set to off");
-                        } else if (str.contains("on" )|| str.contains("own")) {
-                            light1 = true;
-                            run("tdtool --on 1");
-                            answerText.setText("Light 1 set to on");
+
+                } else if (str.contains("two") || str.contains("2") || str.contains("to")) {
+                    if (light2) {
+                        if (str.contains("on") || str.contains("own")) {
+                            answerText.setText("Yes");
+                        } else if (str.contains("off")) {
+                            answerText.setText("No");
                         }
-                    } else if (str.contains("two")|| str.contains("2") || str.contains("to")) {
+                    } else {
                         if (str.contains("off") || str.contains("of")) {
-                            light2 = false;
-                            run("tdtool --off 2");
-                            answerText.setText("Light 2 set to off");
-                        } else if (str.contains("on") || str.contains("own")) {
-                            light2 = true;
-                            run("tdtool --on 2");
-                            answerText.setText("Light 2 set to on");
-
+                            answerText.setText("Yes");
+                        } else if (str.contains("on")) {
+                            answerText.setText("No");
                         }
-
                     }
                 }
-
-        } else if(str.contains("temperature")) {
-                answerText.setText(temp);
-            }else{
-                answerText.setText("I couldn´t understand you");
-
+            } else {
+                if (str.contains("one") || str.contains("1")) {
+                    if (str.contains("off") || str.contains("of")) {
+                        light1 = false;
+                        run("tdtool --off 1");
+                        answerText.setText("Light 1 set to off");
+                    } else if (str.contains("on") || str.contains("own")) {
+                        light1 = true;
+                        run("tdtool --on 1");
+                        answerText.setText("Light 1 set to on");
+                    }
+                } else if (str.contains("two") || str.contains("2") || str.contains("to")) {
+                    if (str.contains("off") || str.contains("of")) {
+                        light2 = false;
+                        run("tdtool --off 2");
+                        answerText.setText("Light 2 set to off");
+                    } else if (str.contains("on") || str.contains("own")) {
+                        light2 = true;
+                        run("tdtool --on 2");
+                        answerText.setText("Light 2 set to on");
+                    }
+                }
             }
 
-}}
+        } else if (str.contains("temperature")) {
+            answerText.setText(temp);
+        } else {
+            answerText.setText("I couldn´t understand you");
+        }
+    }
+}
