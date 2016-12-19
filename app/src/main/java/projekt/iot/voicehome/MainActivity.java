@@ -1,17 +1,19 @@
 package projekt.iot.voicehome;
 
-import android.os.AsyncTask;
-import android.os.Bundle;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Bundle;
 import android.os.StrictMode;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -19,22 +21,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.ConnectException;
 import java.util.ArrayList;
-import android.util.Log;
 
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.Session;
 import ch.ethz.ssh2.StreamGobbler;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-
 
 
 public class MainActivity extends Activity implements OnClickListener  {
 
+    //testar att få igång github för mig /M
 
     private TextView mText;
     private TextView resText;
@@ -83,7 +80,7 @@ public class MainActivity extends Activity implements OnClickListener  {
         Log.d(TAG,  networkInfo.toString());
 
     } else {
-        resText.setText("lol internet fail");
+        resText.setText("lol internet failz");
 
     }
 //}catch (ConnectException e) {
