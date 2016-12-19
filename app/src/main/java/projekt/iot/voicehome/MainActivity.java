@@ -29,6 +29,10 @@ import ch.ethz.ssh2.StreamGobbler;
 
 public class MainActivity extends Activity implements OnClickListener {
 
+
+    //ASD89# GITTEST AV MARCUS YEAAAH!
+    //COllaboration test
+
     private TextView mText;
     private TextView resText;
     private TextView answerText;
