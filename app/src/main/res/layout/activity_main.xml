@@ -21,18 +21,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/btn_speak"
+        android:background="@drawable/bg_button"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Results here"
-        android:id="@+id/textView2"
-        android:layout_below="@+id/btn_speak"
-        android:layout_alignRight="@+id/btn_speak"
-        android:layout_alignEnd="@+id/btn_speak"
-        android:layout_marginTop="88dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -42,5 +33,16 @@
         android:layout_marginBottom="39dp"
         android:layout_above="@+id/btn_speak"
         android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Results here"
+        android:id="@+id/textView2"
+        android:layout_alignLeft="@+id/textView3"
+        android:layout_alignStart="@+id/textView3"
+        android:layout_marginBottom="76dp"
+        android:layout_alignParentBottom="true"
+        tools:layout_alignLeft="@+id/textView1" />
 
 </RelativeLayout>

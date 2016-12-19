@@ -40,7 +40,7 @@ public class MainActivity extends Activity implements OnClickListener {
     private static final String TAG = "SpeechStuff"; //bara för logen
 //    private Switch btnToggleLight1 = null;
 //    private Switch btnToggleLight2 = null;
-
+    private Button speakButton;
     private String temp = null;
     private boolean light1 = false;
     private boolean light2 = true;
@@ -48,10 +48,11 @@ public class MainActivity extends Activity implements OnClickListener {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button speakButton = (Button) findViewById(R.id.btn_speak);
+        speakButton = (Button) findViewById(R.id.btn_speak);
         speakButton.setOnClickListener(this);
 
         mText = (TextView) findViewById(R.id.textView1);
@@ -70,6 +71,7 @@ public class MainActivity extends Activity implements OnClickListener {
         if (networkInfo != null && networkInfo.isConnected()) {
             String ret = run("tdtool -l"); //sends tdtool -l to the run() method, which return a string
 //        String ret = "hello";
+
             useStrings(ret);
             Log.d(TAG, networkInfo.toString());
         } else {
@@ -142,6 +144,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
     public void onClick(View v) {
         mText.setText("Speak now!");
+        speakButton.setSelected(true);
 
         if (v.getId() == R.id.btn_speak) {
             Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -150,13 +153,14 @@ public class MainActivity extends Activity implements OnClickListener {
 
             intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
             sr.startListening(intent);
+
         }
     }
 
     //----------------------------------------------------------------------------------------------
 
     public String run(String command) { //command = the SSH value we want to send
-        String hostname = "192.168.0.16";    //TODO hard-code our pi's ip here..
+        String hostname = "x";    //TODO hard-code our pi's ip here..
         String username = "pi";                 //TODO hard-code our pi's username here..
         String password = "raspberryiot11";           //TODO hard-code our pi's password, here..
         StringBuilder total = new StringBuilder();
@@ -225,7 +229,6 @@ public class MainActivity extends Activity implements OnClickListener {
     //----------------------------------------------------------------------------------------------
 
     public void useVoiceInput(String str) {
-
         if (str.contains("light")) {
             if (str.contains("is")) {
                 if (str.contains("one")) {
@@ -287,5 +290,7 @@ public class MainActivity extends Activity implements OnClickListener {
         } else {
             answerText.setText("I couldn´t understand you");
         }
+        speakButton.setSelected(false);
     }
+
 }
