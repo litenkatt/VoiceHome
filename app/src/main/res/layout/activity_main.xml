@@ -13,7 +13,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="starting.."
+        android:text="@string/textView1"
         android:id="@+id/textView1" />
 
     <Button
@@ -28,7 +28,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Results here"
+        android:text="@string/textView3"
         android:id="@+id/textView3"
         android:layout_marginBottom="39dp"
         android:layout_above="@+id/btn_speak"
@@ -37,7 +37,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Voice results here"
+        android:text="@string/textView2"
         android:id="@+id/textView2"
         android:layout_marginBottom="21dp"
         android:layout_alignParentBottom="true"

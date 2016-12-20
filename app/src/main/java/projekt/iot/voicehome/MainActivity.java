@@ -46,7 +46,7 @@ public class MainActivity extends Activity implements OnClickListener {
     private String temp = null;
     private boolean light1 = false;
     private boolean light2 = true;
-    private ArrayList<String> voiceData = new ArrayList<String>();
+   // private ArrayList<String> voiceData = new ArrayList<String>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -85,6 +85,7 @@ public class MainActivity extends Activity implements OnClickListener {
     //----------------------------------------------------------------------------------------------
 
     class Lis implements RecognitionListener {
+        private ArrayList<String> voiceData = new ArrayList<>();
         public void onReadyForSpeech(Bundle params) {
             Log.d(TAG, "onReadyForSpeech");
         }
@@ -140,7 +141,8 @@ public class MainActivity extends Activity implements OnClickListener {
         public void onEvent(int eventType, Bundle params) {
             Log.d(TAG, "onEvent " + eventType);
         }
-        public void setButton(){
+
+        public void setButton() {
             /* ändrar till att speak-knappen inte längre är i valt läge
                 och genom det ändrar tillbaka till inaktivt stadie, färg, osv */
             speakButton.setSelected(false);
@@ -186,7 +188,7 @@ public class MainActivity extends Activity implements OnClickListener {
             Connection conn = new Connection(hostname); //init tcp/ip connection to SSH
             conn.connect(); //start connection to hostname
             Boolean isAuthenticated = conn.authenticateWithPassword(username, password);
-            if (isAuthenticated == false)
+            if (!isAuthenticated)
                 throw new IOException("Authentication failed.");
             Session sess = conn.openSession();
             sess.execCommand(command);
@@ -241,69 +243,91 @@ public class MainActivity extends Activity implements OnClickListener {
     //----------------------------------------------------------------------------------------------
 
     public void useVoiceInput(String str) {
-        if (str.contains("light")) {
-            if (str.contains("is")) {
-                if (str.contains("one")) {
-                    if (light1) {
-                        if (str.contains("on") || str.contains("own")) {
-                            answerText.setText("Yes");
-                        } else if (str.contains("off")) {
-                            answerText.setText("No");
-                        }
-                    } else {
-                        if (str.contains("off") || str.contains("of")) {
-                            answerText.setText("Yes");
-                        } else if (str.contains("on")) {
-                            answerText.setText("No");
-                        }
-                    }
+        /*
+        tar string baserat på röstinläsning för att jämnföra mot tillgängliga kommandon..
+         */
 
-                } else if (str.contains("two") || str.contains("2") || str.contains("to")) {
-                    if (light2) {
-                        if (str.contains("on") || str.contains("own")) {
-                            answerText.setText("Yes");
-                        } else if (str.contains("off")) {
-                            answerText.setText("No");
-                        }
-                    } else {
-                        if (str.contains("off") || str.contains("of")) {
-                            answerText.setText("Yes");
-                        } else if (str.contains("on")) {
-                            answerText.setText("No");
-                        }
-                    }
-                }
-            } else {
-                if (str.contains("one") || str.contains("1")) {
-                    if (str.contains("off") || str.contains("of")) {
-                        light1 = false;
-                        run("tdtool --off 1");
-                        answerText.setText("Light 1 set to off");
-                    } else if (str.contains("on") || str.contains("own")) {
-                        light1 = true;
-                        run("tdtool --on 1");
-                        answerText.setText("Light 1 set to on");
-                    }
-                } else if (str.contains("two") || str.contains("2") || str.contains("to")) {
-                    if (str.contains("off") || str.contains("of")) {
-                        light2 = false;
-                        run("tdtool --off 2");
-                        answerText.setText("Light 2 set to off");
-                    } else if (str.contains("on") || str.contains("own")) {
-                        light2 = true;
-                        run("tdtool --on 2");
-                        answerText.setText("Light 2 set to on");
-                    }
-                }
+        if (str.contains("light") || str.contains("lamp")) {
+            if (str.contains("is")) {   //om kommandot innehåller is -> fråga
+                checkLamp(str);
+            } else {                    //annars är kommandor utförande -> ändrar lampans läge
+                setLamp(str);
             }
-        } else if (str.contains("temperature")) {
+
+        } else if (str.contains("temperature")) {   //innehåller det temperatur så skrivut temperatur
             answerText.setText(temp);
-        } else {
+            //eventuellt en till ifsats för att fråga om / sätta önskad temperatur
+
+
+        } else {            //ifall inget passar skrivs felmeddelande ut
             answerText.setText("I couldn´t understand you");
         }
-     //   public void checkLightOne(String str){
+    }
 
+
+    public void checkLamp(String str) {
+        /*
+        takes voice input to check lamp status
+        kollar boolean light# om den är true=på / false=av
+         */
+        if (str.contains("one")) {
+            if (light1) {
+                if (str.contains("on") || str.contains("own")) {
+                    answerText.setText("Yes");
+                } else if (str.contains("off")) {
+                    answerText.setText("No");
+                }
+            } else {
+                if (str.contains("off") || str.contains("of")) {
+                    answerText.setText("Yes");
+                } else if (str.contains("on")) {
+                    answerText.setText("No");
+                }
+            }
+
+        } else if (str.contains("two") || str.contains("2") || str.contains("to")) {
+            if (light2) {
+                if (str.contains("on") || str.contains("own")) {
+                    answerText.setText("Yes");
+                } else if (str.contains("off")) {
+                    answerText.setText("No");
+                }
+            } else {
+                if (str.contains("off") || str.contains("of")) {
+                    answerText.setText("Yes");
+                } else if (str.contains("on")) {
+                    answerText.setText("No");
+                }
+            }
         }
     }
+
+    public void setLamp(String str) {
+        /*
+        takes voice input to change lamp status
+         */
+        if (str.contains("one") || str.contains("1")) {
+            if (str.contains("off") || str.contains("of")) {
+                light1 = false;
+                run("tdtool --off 1");
+                answerText.setText("Light 1 set to off");
+            } else if (str.contains("on") || str.contains("own")) {
+                light1 = true;
+                run("tdtool --on 1");
+                answerText.setText("Light 1 set to on");
+            }
+        } else if (str.contains("two") || str.contains("2") || str.contains("to")) {
+            if (str.contains("off") || str.contains("of")) {
+                light2 = false;
+                run("tdtool --off 2");
+                answerText.setText("Light 2 set to off");
+            } else if (str.contains("on") || str.contains("own")) {
+                light2 = true;
+                run("tdtool --on 2");
+                answerText.setText("Light 2 set to on");
+            }
+        }
+    }
+
 
 }
