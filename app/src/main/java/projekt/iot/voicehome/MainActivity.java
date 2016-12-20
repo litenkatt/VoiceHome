@@ -1,4 +1,11 @@
 package projekt.iot.voicehome;
+/**
+ * App for controlling an IoT SmartHome
+ *
+ * @author Tove de Verdier
+ * @author Ninni Hörnaeus
+ * @author Marcus Warglo
+ */
 
 import android.app.Activity;
 import android.content.Context;
@@ -26,20 +33,15 @@ import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.Session;
 import ch.ethz.ssh2.StreamGobbler;
 
-
 public class MainActivity extends Activity implements OnClickListener {
 
-
-    //ASD89# GITTEST AV MARCUS YEAAAH!
-    //COllaboration test
+    //om error7 går den inte tillbaka till defaultmode.
 
     private TextView mText;
     private TextView resText;
     private TextView answerText;
     private SpeechRecognizer sr;
-    private static final String TAG = "SpeechStuff"; //bara för logen
-//    private Switch btnToggleLight1 = null;
-//    private Switch btnToggleLight2 = null;
+    private static final String TAG = "SpeechStuff"; //bara för loggen
     private Button speakButton;
     private String temp = null;
     private boolean light1 = false;
@@ -48,7 +50,6 @@ public class MainActivity extends Activity implements OnClickListener {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -58,12 +59,12 @@ public class MainActivity extends Activity implements OnClickListener {
         mText = (TextView) findViewById(R.id.textView1);
         resText = (TextView) findViewById(R.id.textView2);
         answerText = (TextView) findViewById(R.id.textView3);
-        mText.setText("hejhej");
+        mText.setText("Welcome");
 
         sr = SpeechRecognizer.createSpeechRecognizer(this);
         sr.setRecognitionListener(new Lis());
 
-//try{
+        //try{
         //Kod som ska kolla om det finns internet innan den försöker ansluta
         ConnectivityManager connMgr = (ConnectivityManager)
                 getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -71,7 +72,6 @@ public class MainActivity extends Activity implements OnClickListener {
         if (networkInfo != null && networkInfo.isConnected()) {
             String ret = run("tdtool -l"); //sends tdtool -l to the run() method, which return a string
 //        String ret = "hello";
-
             useStrings(ret);
             Log.d(TAG, networkInfo.toString());
         } else {
@@ -80,8 +80,6 @@ public class MainActivity extends Activity implements OnClickListener {
 //}catch (ConnectException e) {
 //
 //}
-
-
     }
 
     //----------------------------------------------------------------------------------------------
@@ -110,6 +108,7 @@ public class MainActivity extends Activity implements OnClickListener {
         public void onError(int error) {
             Log.d(TAG, "error " + error);
             mText.setText("error " + error);
+            setButton();
         }
 
         public void onResults(Bundle results) {
@@ -121,30 +120,47 @@ public class MainActivity extends Activity implements OnClickListener {
 
             resText.setText(voiceData.toString());
 
-//            Bygger ihop alla möjliga ord till en string
-            for (int i = 0; i < voiceData.size(); i++) {
+            for (int i = 0; i < voiceData.size(); i++) {    // Bygger ihop alla möjliga ord till en string
                 Log.d(TAG, "result " + voiceData.get(i));
                 str += voiceData.get(i);
                 Log.d(TAG, "result " + str);
             }
             useVoiceInput(str);
             mText.setText("results: " + String.valueOf(voiceData.size()));
+            setButton();
+
+
         }
 
         public void onPartialResults(Bundle partialResults) {
             Log.d(TAG, "onPartialResults");
+            setButton();
         }
 
         public void onEvent(int eventType, Bundle params) {
             Log.d(TAG, "onEvent " + eventType);
         }
+        public void setButton(){
+            /* ändrar till att speak-knappen inte längre är i valt läge
+                och genom det ändrar tillbaka till inaktivt stadie, färg, osv */
+            speakButton.setSelected(false);
+            speakButton.setText("Speak");
+        }
     }
 
     //----------------------------------------------------------------------------------------------
 
+    //lyssnaren som händer när man klickar på knappen speak.
     public void onClick(View v) {
-        mText.setText("Speak now!");
+        mText.setText("Speak now..");
         speakButton.setSelected(true);
+        speakButton.setText("Listening...");
+        answerText.setText(" ");
+        /*
+        här över ändrar vi så knappen speakButton hamnar i läge(state) selected, och håller det
+        läget under hela processen som utförs av knappen. knappen sätts manuellt tillbaka som
+        inaktiv i slutet av metoden useVoiceInput(). Selected läge ändrar knappens färg och text
+         */
 
         if (v.getId() == R.id.btn_speak) {
             Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -153,15 +169,14 @@ public class MainActivity extends Activity implements OnClickListener {
 
             intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
             sr.startListening(intent);
-
         }
     }
 
     //----------------------------------------------------------------------------------------------
 
     public String run(String command) { //command = the SSH value we want to send
-        String hostname = "x";    //TODO hard-code our pi's ip here..
-        String username = "pi";                 //TODO hard-code our pi's username here..
+        String hostname = "213.89.203.106";                       //TODO hard-code our pi's ip here..
+        String username = "pi";                     //TODO hard-code our pi's username here..
         String password = "raspberryiot11";           //TODO hard-code our pi's password, here..
         StringBuilder total = new StringBuilder();
         try {
@@ -184,13 +199,11 @@ public class MainActivity extends Activity implements OnClickListener {
                     break;
                 total.append(line).append('\n');
             }
-                /* Shows exit status, if available (otherwise "null") */
+            /* Shows exit status, if available (otherwise "null") */
             System.out.println("Exitcode: " + sess.getExitStatus());
             sess.close();
             conn.close();
             answerText.setText("Connected");
-
-
         } catch (IOException e) {
 //            e.printStackTrace(System.err);
 //            System.exit(2);
@@ -223,7 +236,6 @@ public class MainActivity extends Activity implements OnClickListener {
                 temp = strA[3];
             }
         }
-
     }
 
     //----------------------------------------------------------------------------------------------
@@ -284,13 +296,14 @@ public class MainActivity extends Activity implements OnClickListener {
                     }
                 }
             }
-
         } else if (str.contains("temperature")) {
             answerText.setText(temp);
         } else {
             answerText.setText("I couldn´t understand you");
         }
-        speakButton.setSelected(false);
+     //   public void checkLightOne(String str){
+
+        }
     }
 
 }
