@@ -1,10 +1,12 @@
 package projekt.iot.voicehome;
+
 /**
- * App for controlling an IoT SmartHome
+ * Application for controlling an IoT SmartHome
  *
  * @author Tove de Verdier
  * @author Ninni Hörnaeus
  * @author Marcus Warglo
+ *
  */
 
 import android.app.Activity;
@@ -22,6 +24,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,7 +38,9 @@ import ch.ethz.ssh2.StreamGobbler;
 
 public class MainActivity extends Activity implements OnClickListener {
 
-    //om error7 går den inte tillbaka till defaultmode.
+    /*sätt upp en aktivitetsmeny med dropdown som kan visa hjälp
+        där blandannat tillgängliga kommandon skrivs ut..
+     */
 
     private TextView mText;
     private TextView resText;
@@ -46,7 +51,6 @@ public class MainActivity extends Activity implements OnClickListener {
     private String temp = null;
     private boolean light1 = false;
     private boolean light2 = true;
-   // private ArrayList<String> voiceData = new ArrayList<String>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -64,18 +68,21 @@ public class MainActivity extends Activity implements OnClickListener {
         sr = SpeechRecognizer.createSpeechRecognizer(this);
         sr.setRecognitionListener(new Lis());
 
-        //try{
+                                            //try{
         //Kod som ska kolla om det finns internet innan den försöker ansluta
         ConnectivityManager connMgr = (ConnectivityManager)
                 getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
             String ret = run("tdtool -l"); //sends tdtool -l to the run() method, which return a string
-//        String ret = "hello";
-            useStrings(ret);
+            useStrings(ret);                //uses return statement from run() method
             Log.d(TAG, networkInfo.toString());
-        } else {
-            resText.setText("lol internet fail");
+        } else { //om internetuppkoppling saknas -> toast meddelande med fail
+            Context context = getApplicationContext();
+            CharSequence text = "lol internet failz!";
+            int duration = Toast.LENGTH_LONG;
+            Toast toast = Toast.makeText(context, text, duration);
+            toast.show();
         }
 //}catch (ConnectException e) {
 //
@@ -86,33 +93,29 @@ public class MainActivity extends Activity implements OnClickListener {
 
     class Lis implements RecognitionListener {
         private ArrayList<String> voiceData = new ArrayList<>();
+
         public void onReadyForSpeech(Bundle params) {
             Log.d(TAG, "onReadyForSpeech");
         }
-
         public void onBeginningOfSpeech() {
             Log.d(TAG, "onBeginningOfSpeech");
         }
-
         public void onRmsChanged(float rmsdB) {
             Log.d(TAG, "onRmsChanged");
         } //ljudnivån ändras
-
         public void onBufferReceived(byte[] buffer) {
             Log.d(TAG, "onBufferReceived");
         }
-
         public void onEndOfSpeech() {
             Log.d(TAG, "onEndofSpeech");
         }
-
         public void onError(int error) {
             Log.d(TAG, "error " + error);
             mText.setText("error " + error);
             setButton();
         }
 
-        public void onResults(Bundle results) {
+        public void onResults(Bundle results) { //when result from voice input is found...
             String str = "";
             Log.d(TAG, "onResults " + results);
 
@@ -129,22 +132,19 @@ public class MainActivity extends Activity implements OnClickListener {
             useVoiceInput(str);
             mText.setText("results: " + String.valueOf(voiceData.size()));
             setButton();
-
-
         }
 
         public void onPartialResults(Bundle partialResults) {
             Log.d(TAG, "onPartialResults");
             setButton();
         }
-
         public void onEvent(int eventType, Bundle params) {
             Log.d(TAG, "onEvent " + eventType);
         }
 
-        public void setButton() {
-            /* ändrar till att speak-knappen inte längre är i valt läge
+        /* ändrar till att speak-knappen inte längre är i valt läge
                 och genom det ändrar tillbaka till inaktivt stadie, färg, osv */
+        public void setButton() {
             speakButton.setSelected(false);
             speakButton.setText("Speak");
         }
@@ -220,18 +220,10 @@ public class MainActivity extends Activity implements OnClickListener {
         String[] lines = str.split("\\n");                      //splits string at every newline
         for (String s : lines) {
             if (s.contains("1") && s.contains("Lighting1")) {   //id som man gett actuator's
-                if (s.contains("OFF")) {
-                    light1 = false;
-                } else {
-                    light1 = true;
-                }
+                light1 = !s.contains("OFF");
             }
             if (s.contains("2") && s.contains("Lighting2")) {   //id som man gett actuator's
-                if (s.contains("OFF")) {
-                    light2 = false;
-                } else {
-                    light2 = true;
-                }
+                light2 = !s.contains("OFF");
             }
             if (s.contains("temperature") && s.contains("135")) {   //135==id på sensors
                 String[] strA = s.split("\\t");                     //split strings into tabs
@@ -243,21 +235,16 @@ public class MainActivity extends Activity implements OnClickListener {
     //----------------------------------------------------------------------------------------------
 
     public void useVoiceInput(String str) {
-        /*
-        tar string baserat på röstinläsning för att jämnföra mot tillgängliga kommandon..
-         */
-
+        /* tar string baserat på röstinläsning för att jämnföra mot tillgängliga kommandon.. */
         if (str.contains("light") || str.contains("lamp")) {
             if (str.contains("is")) {   //om kommandot innehåller is -> fråga
                 checkLamp(str);
             } else {                    //annars är kommandor utförande -> ändrar lampans läge
                 setLamp(str);
             }
-
         } else if (str.contains("temperature")) {   //innehåller det temperatur så skrivut temperatur
             answerText.setText(temp);
             //eventuellt en till ifsats för att fråga om / sätta önskad temperatur
-
 
         } else {            //ifall inget passar skrivs felmeddelande ut
             answerText.setText("I couldn´t understand you");
@@ -328,6 +315,7 @@ public class MainActivity extends Activity implements OnClickListener {
             }
         }
     }
+    //----------------------------------------------------------------------------------------------
 
 
 }
