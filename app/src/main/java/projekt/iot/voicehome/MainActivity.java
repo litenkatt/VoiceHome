@@ -44,10 +44,6 @@ import ch.ethz.ssh2.StreamGobbler;
 
 public class MainActivity extends Activity implements OnClickListener {
 
-    /*sätt upp en aktivitetsmeny med dropdown som kan visa hjälp
-        där blandannat tillgängliga kommandon skrivs ut..
-     */
-
     private TextView mText;
     private TextView resText;
     private TextView answerText;
@@ -72,6 +68,7 @@ public class MainActivity extends Activity implements OnClickListener {
         resText = (TextView) findViewById(R.id.textView2);
         answerText = (TextView) findViewById(R.id.textView3);
         mText.setText("Welcome");
+
 
         sr = SpeechRecognizer.createSpeechRecognizer(this);
         sr.setRecognitionListener(new Lis());
@@ -99,11 +96,22 @@ public class MainActivity extends Activity implements OnClickListener {
             public void onInit(int status) {
                 if(status != TextToSpeech.ERROR) {
                     hal.setLanguage(Locale.UK);
-                    hal.setSpeechRate(0.8f);
-                    hal.setPitch(0.75f);
+                    hal.setSpeechRate(0.825f);
+                    hal.setPitch(0.725f);
+                    greeting();
                 }
             }
         });
+
+    }
+    public void greeting(){
+        String greeting = "Welcome\nPress the button to give voice command, or ask me for help on what to do";
+        hal.speak(greeting, TextToSpeech.QUEUE_FLUSH, null);
+        Context context = getApplicationContext();
+        int duration = Toast.LENGTH_LONG;
+        Toast greetToast = Toast.makeText(context, greeting, duration);
+        greetToast.show();
+
     }
 
     //----------------------------------------------------------------------------------------------
@@ -161,6 +169,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
         /* ändrar till att speak-knappen inte längre är i valt läge
                 och genom det ändrar tillbaka till inaktivt stadie, färg, osv */
+        
         public void setButton() {
             speakButton.setSelected(false);
             speakButton.setText("Speak");
@@ -263,12 +272,13 @@ public class MainActivity extends Activity implements OnClickListener {
                 }
             } else if (str.contains("temperature"))
                 answerText.setText(temp);
-            else if ((str.contains("show")|| str.contains("Tell")) && str.contains("time")) {//show time
+            else if ((str.contains("show") || str.contains("Tell") || str.contains("What")) && str.contains("time")) {//show time
                 showTime();
-            } else if (str.contains("show")  && (str.contains("date") || str.contains("dates")) ) {//show date
+            } else if (str.contains("date")){//show date
                 String currentDateTimeString = DateFormat.getDateInstance().format(new Date());
                 answerText.setText(currentDateTimeString);
-
+            } else if (str.contains("help")){//show date
+                showHelp();
             } else {            //ifall inget passar skrivs felmeddelande ut
                 answerText.setText("I'm sorry Dave. I'm afraid I can't doo that.");
 
@@ -277,6 +287,13 @@ public class MainActivity extends Activity implements OnClickListener {
      //
         hal.speak(sayThis, TextToSpeech.QUEUE_FLUSH, null);
         }
+
+    public void showHelp(){
+        String help = "Okay. You can turn lights on or off. Show temperature in the room. Or show today's date or time.";
+        answerText.setText(help);
+        String sayThis = answerText.getText().toString();
+        hal.speak(sayThis, TextToSpeech.QUEUE_FLUSH, null);
+    }
 
     public void showAppointment(){
 
@@ -292,7 +309,6 @@ public class MainActivity extends Activity implements OnClickListener {
                 Calendar c = Calendar.getInstance();
                 answerText.setText(c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND));
             }
-
             public void onFinish() {
 
             }
