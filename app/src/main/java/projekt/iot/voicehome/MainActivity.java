@@ -15,10 +15,12 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.StrictMode;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,7 +32,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.Session;
@@ -51,6 +57,8 @@ public class MainActivity extends Activity implements OnClickListener {
     private String temp = null;
     private boolean light1 = false;
     private boolean light2 = true;
+    private CountDownTimer newtimer = null;
+    private TextToSpeech hal;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,7 +75,6 @@ public class MainActivity extends Activity implements OnClickListener {
 
         sr = SpeechRecognizer.createSpeechRecognizer(this);
         sr.setRecognitionListener(new Lis());
-
                                             //try{
         //Kod som ska kolla om det finns internet innan den försöker ansluta
         ConnectivityManager connMgr = (ConnectivityManager)
@@ -87,6 +94,14 @@ public class MainActivity extends Activity implements OnClickListener {
 //}catch (ConnectException e) {
 //
 //}
+        hal=new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status != TextToSpeech.ERROR) {
+                    hal.setLanguage(Locale.US);
+                }
+            }
+        });
     }
 
     //----------------------------------------------------------------------------------------------
@@ -235,20 +250,49 @@ public class MainActivity extends Activity implements OnClickListener {
     //----------------------------------------------------------------------------------------------
 
     public void useVoiceInput(String str) {
-        /* tar string baserat på röstinläsning för att jämnföra mot tillgängliga kommandon.. */
-        if (str.contains("light") || str.contains("lamp")) {
-            if (str.contains("is")) {   //om kommandot innehåller is -> fråga
-                checkLamp(str);
-            } else {                    //annars är kommandor utförande -> ändrar lampans läge
-                setLamp(str);
-            }
-        } else if (str.contains("temperature")) {   //innehåller det temperatur så skrivut temperatur
-            answerText.setText(temp);
-            //eventuellt en till ifsats för att fråga om / sätta önskad temperatur
+        if (newtimer != null) //if we've checked time before and its running, cancel it
+            newtimer.cancel();
+        /* takes in string to compare to available commands in the system  */
+            if (str.contains("light") || str.contains("lamp")) {
+                if (str.contains("is")) {   //if command includes is -> check lamp status
+                    checkLamp(str);
+                } else {                    //otherwise command set -> change light status
+                    setLamp(str);
+                }
+            } else if (str.contains("temperature"))
+                answerText.setText(temp);
+            else if (str.contains("show") && str.contains("time")) {//show time
+              showTime();
+            } else if (str.contains("show") && str.contains("date") || str.contains("dates")) {//show date
+                String currentDateTimeString = DateFormat.getDateInstance().format(new Date());
+                answerText.setText(currentDateTimeString);
 
-        } else {            //ifall inget passar skrivs felmeddelande ut
-            answerText.setText("I couldn´t understand you");
+            } else {            //ifall inget passar skrivs felmeddelande ut
+                answerText.setText("I'm sorry Dave, I'm afraid I couldn't understand you..");
+
+            }
+        String sayThis = answerText.getText().toString();
+        Toast.makeText(getApplicationContext(), sayThis,Toast.LENGTH_SHORT).show();
+        hal.speak(sayThis, TextToSpeech.QUEUE_FLUSH, null);
         }
+
+    public void showAppointment(){
+
+    }
+
+    public void showTime(){
+        newtimer = new CountDownTimer(1000000000, 1000) {
+
+            public void onTick(long millisUntilFinished) {
+                Calendar c = Calendar.getInstance();
+                answerText.setText(c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND));
+            }
+
+            public void onFinish() {
+
+            }
+        };
+        newtimer.start();
     }
 
 
@@ -313,9 +357,22 @@ public class MainActivity extends Activity implements OnClickListener {
                 run("tdtool --on 2");
                 answerText.setText("Light 2 set to on");
             }
+        } else if (str.contains("all") || str.contains("al") || str.contains("all")) {
+            if (str.contains("off") || str.contains("of")) {
+                light2 = false;
+                run("tdtool --off 2");
+                light1 = false;
+                run("tdtool --off 1");
+                answerText.setText("All lights set to off");
+            } else if (str.contains("on") || str.contains("own")) {
+                light1 = true;
+                run("tdtool --on 1");
+                light2 = true;
+                run("tdtool --on 2");
+                answerText.setText("All lights set to on");
+            }
         }
     }
+
     //----------------------------------------------------------------------------------------------
-
-
 }
