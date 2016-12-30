@@ -98,7 +98,9 @@ public class MainActivity extends Activity implements OnClickListener {
             @Override
             public void onInit(int status) {
                 if(status != TextToSpeech.ERROR) {
-                    hal.setLanguage(Locale.US);
+                    hal.setLanguage(Locale.UK);
+                    hal.setSpeechRate(0.8f);
+                    hal.setPitch(0.75f);
                 }
             }
         });
@@ -261,18 +263,18 @@ public class MainActivity extends Activity implements OnClickListener {
                 }
             } else if (str.contains("temperature"))
                 answerText.setText(temp);
-            else if (str.contains("show") && str.contains("time")) {//show time
-              showTime();
-            } else if (str.contains("show") && str.contains("date") || str.contains("dates")) {//show date
+            else if ((str.contains("show")|| str.contains("Tell")) && str.contains("time")) {//show time
+                showTime();
+            } else if (str.contains("show")  && (str.contains("date") || str.contains("dates")) ) {//show date
                 String currentDateTimeString = DateFormat.getDateInstance().format(new Date());
                 answerText.setText(currentDateTimeString);
 
             } else {            //ifall inget passar skrivs felmeddelande ut
-                answerText.setText("I'm sorry Dave, I'm afraid I couldn't understand you..");
+                answerText.setText("I'm sorry Dave. I'm afraid I can't doo that.");
 
             }
         String sayThis = answerText.getText().toString();
-        Toast.makeText(getApplicationContext(), sayThis,Toast.LENGTH_SHORT).show();
+     //
         hal.speak(sayThis, TextToSpeech.QUEUE_FLUSH, null);
         }
 
@@ -281,8 +283,11 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
     public void showTime(){
+        String timeNow = DateFormat.getTimeInstance().format(new Date());
+        answerText.setText(timeNow);
+        String sayThis = answerText.getText().toString();
+        hal.speak(sayThis, TextToSpeech.QUEUE_FLUSH, null);
         newtimer = new CountDownTimer(1000000000, 1000) {
-
             public void onTick(long millisUntilFinished) {
                 Calendar c = Calendar.getInstance();
                 answerText.setText(c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND));
