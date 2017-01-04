@@ -6,6 +6,7 @@ package projekt.iot.voicehome;
  * @author Tove de Verdier
  * @author Ninni Hörnaeus
  * @author Marcus Warglo
+ *
  */
 
 import android.app.Activity;
@@ -508,6 +509,7 @@ public class MainActivity extends Activity implements OnClickListener {
         }
 
         protected void onPostExecute(String result) {
+            result = result+"\u00b0 outside";
             answerText.setText(result);
             hal.speak(result, TextToSpeech.QUEUE_FLUSH, null);
 
