@@ -1,7 +1,8 @@
 <resources>
     <string name="app_name">VoiceHome</string>
-    <string name="textView1">starting..</string>
+    <string name="textView1">Welcome!</string>
     <string name="textView2">Voice results here</string>
     <string name="textView3">Results here</string>
     <string name="btn_txt">Speak</string>
+
 </resources>

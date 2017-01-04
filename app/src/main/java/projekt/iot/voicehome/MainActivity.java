@@ -6,6 +6,7 @@ package projekt.iot.voicehome;
  * @author Tove de Verdier
  * @author Ninni Hörnaeus
  * @author Marcus Warglo
+ *
  */
 
 import android.app.Activity;
@@ -26,6 +27,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -83,14 +85,15 @@ public class MainActivity extends Activity implements OnClickListener {
 
         sr = SpeechRecognizer.createSpeechRecognizer(this);
         sr.setRecognitionListener(new Lis());
-        //try{
-        //Code to test available internet status before attemting to connect
+        //Code to test available internet status before attempting to connect
         ConnectivityManager connMgr = (ConnectivityManager)
                 getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
-            String ret = run("tdtool -l"); //sends tdtool -l to the run() method, which return a string
-            useStrings(ret);                //uses return statement from run() method
+
+                    String ret = run("tdtool -l"); //sends tdtool -l to the run() method, which returns a string
+                    useStrings(ret);                //uses return statement from run() method
+
             Log.d(TAG, networkInfo.toString());
         } else { //if internetconnection is unavailable -> toast meddelande with fail
             Context context = getApplicationContext();
@@ -99,9 +102,6 @@ public class MainActivity extends Activity implements OnClickListener {
             Toast toast = Toast.makeText(context, text, duration);
             toast.show();
         }
-//}catch (ConnectException e) {
-//
-//}
         hal = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
@@ -116,13 +116,16 @@ public class MainActivity extends Activity implements OnClickListener {
 
     }
 
+    //----------------------------------------------------------------------------------------------
+
     public void greeting() {
-        String greeting = "Welcome\nPress the button to give voice command or ask for help on what to do";
-        //   hal.speak(greeting, TextToSpeech.QUEUE_FLUSH, null);
-        Context context = getApplicationContext();
-        int duration = Toast.LENGTH_LONG;
-        Toast greetToast = Toast.makeText(context, greeting, duration);
-        greetToast.show();
+        String greeting = "Welcome! \nPress the button to give voice command or ask for help on what to do.";
+        hal.speak(greeting, TextToSpeech.QUEUE_FLUSH, null);
+//        Context context = getApplicationContext();
+//        int duration = Toast.LENGTH_LONG;
+//        Toast greetToast = Toast.makeText(context, greeting, duration);
+//        greetToast.show();
+        mText.setText(greeting);
 
     }
 
@@ -200,7 +203,6 @@ public class MainActivity extends Activity implements OnClickListener {
     public void onClick(View v) {
         mText.setText("Speak now..");
         speakButton.setSelected(true);
-        speakButton.setText("Listening...");
         answerText.setText(" ");
         /*
         With this we change so the button speakButton goes into selected state, and holds this state
@@ -280,6 +282,7 @@ public class MainActivity extends Activity implements OnClickListener {
     //----------------------------------------------------------------------------------------------
 
     public void useVoiceInput(String str) {
+        answerText.setText("");
         if (newtimer != null) //if we've checked time before and its running, cancel it
             newtimer.cancel();
         /* takes in string to compare to available commands in the system  */
@@ -289,11 +292,12 @@ public class MainActivity extends Activity implements OnClickListener {
             } else {                    //otherwise command set -> change light status
                 setLamp(str);
             }
-        } else if (str.contains("temperature") && !str.contains("outside"))
+        } else if (str.contains("temperature") && !str.contains("outside")) {
             answerText.setText(temp);
-        else if (str.contains("temperature") && str.contains("outside"))
+        }else if (str.contains("temperature") && str.contains("outside")) {
             new PostClass(this).execute();
-        else if ((str.contains("show") || str.contains("Tell") || str.contains("What")) && str.contains("time")) {//show time
+
+        }else if ((str.contains("show") || str.contains("Tell") || str.contains("What")) && str.contains("time")) {//show time
             showTime();
         } else if (str.contains("date")) {//show date
             String currentDateTimeString = DateFormat.getDateInstance().format(new Date());
@@ -304,10 +308,12 @@ public class MainActivity extends Activity implements OnClickListener {
             answerText.setText("I'm sorry. I'm afraid I can't doo that.");
 
         }
+
         String sayThis = answerText.getText().toString();
-        //
         hal.speak(sayThis, TextToSpeech.QUEUE_FLUSH, null);
     }
+
+    //----------------------------------------------------------------------------------------------
 
     public void showHelp() {
         String help = "You can turn lights on or off. Show temperature in the room. Or show today's date or time.";
@@ -315,6 +321,8 @@ public class MainActivity extends Activity implements OnClickListener {
         String sayThis = answerText.getText().toString();
         hal.speak(sayThis, TextToSpeech.QUEUE_FLUSH, null);
     }
+
+    //----------------------------------------------------------------------------------------------
 
 
     public void showTime() {
@@ -333,6 +341,8 @@ public class MainActivity extends Activity implements OnClickListener {
         };
         newtimer.start();
     }
+
+    //----------------------------------------------------------------------------------------------
 
     public void checkLamp(String str) {
         /*
@@ -370,6 +380,8 @@ public class MainActivity extends Activity implements OnClickListener {
             }
         }
     }
+
+    //----------------------------------------------------------------------------------------------
 
     public void setLamp(String str) {
         /*
@@ -415,21 +427,22 @@ public class MainActivity extends Activity implements OnClickListener {
 
     //----------------------------------------------------------------------------------------------
 
-    private class PostClass extends AsyncTask<String, Void, Void> {
+    private class PostClass extends AsyncTask<String, Void, String> {
 
         /*
-        this class fetches weatherstation information from trafikverket API. for fetching information
-        a request is sent with a http-POST request in form of the XML information we want to retireve.
-        The information we send in xml form is the api-key we need to acces the API, name of the weatherstation
+        this class fetches weather station information from trafikverket API. for fetching information
+        a request is sent with a http-POST request in form of the XML information we want to retrieve.
+        The information we send in xml form is the api-key we need to acces the API, name of the weather station
         we want to get information from and the filters we want to add -> measured air temperature.
-        The XML is converted to a bytestream and send as a POST command to the URL adress, and the respons is read
-        back as a inputstream, converted and parsed to retrieve only the information of interest, Not the tags.
+        The XML is converted to a byte stream and send as a POST command to the URL address, and the response is read
+        back as a input stream, converted and parsed to retrieve only the information of interest, Not the tags.
          */
 
         private String url1 = "http://api.trafikinfo.trafikverket.se/v1.1/data.xml";
         private final String KEY_TEMP = "TEMP";
         private final Context context;
-        private String temperature;
+        private String temperature = null;
+        private String output2;
 
         public PostClass(Context c) {
             this.context = c;
@@ -443,9 +456,8 @@ public class MainActivity extends Activity implements OnClickListener {
         }
 
         @Override
-        protected Void doInBackground(String... params) {
+        protected String doInBackground(String... params) {
             try {
-                final TextView outputView = (TextView) findViewById(R.id.textView3); //sends result to answerText field
                 URL url = new URL(url1);    //sends the url to trafikverketAPI
 
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -486,29 +498,27 @@ public class MainActivity extends Activity implements OnClickListener {
 
                 output.append(System.getProperty("line.separator") + System.getProperty("line.separator") + System.getProperty("line.separator") + responseOutput.toString());
 
-                //System.out.println(connection.getResponseCode()+" testkod " + output); //just for testing
-                final String output2 = parseResponse(output);
-
-                MainActivity.this.runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        outputView.setText(output2);
-                        progress.dismiss();
-                    }
-                });
+                output2 = parseResponse(output);
 
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return null;
+            return output2;
         }
 
-        protected void onPostExecute() {
+        protected void onPostExecute(String result) {
+            result = result+"\u00b0 outside";
+            answerText.setText(result);
+            hal.speak(result, TextToSpeech.QUEUE_FLUSH, null);
+
             progress.dismiss();
         }
+
+//        public static String getTemp(){
+//            return output2;
+//        }
 
         /*
         this method uses PullParser to create a parser method who takes in the StringBuilder we got from
