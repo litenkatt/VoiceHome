@@ -80,8 +80,6 @@ public class MainActivity extends Activity implements OnClickListener {
         mText = (TextView) findViewById(R.id.textView1);
         resText = (TextView) findViewById(R.id.textView2);
         answerText = (TextView) findViewById(R.id.textView3);
-        mText.setText("Welcome");
-
 
         sr = SpeechRecognizer.createSpeechRecognizer(this);
         sr.setRecognitionListener(new Lis());
@@ -156,8 +154,9 @@ public class MainActivity extends Activity implements OnClickListener {
 
         public void onError(int error) {
             Log.d(TAG, "error " + error);
-            mText.setText("error " + error);
+//            mText.setText("error " + error);
             setButton();
+            useVoiceInput("xx");
         }
 
         public void onResults(Bundle results) { //when result from voice input is found...
@@ -167,7 +166,7 @@ public class MainActivity extends Activity implements OnClickListener {
             voiceData = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION); //creates arraylist of all possible results from voiceinput
             Log.d(TAG, voiceData.toString());
 
-            resText.setText(voiceData.toString());
+            resText.setText("What you might have said: \n" + voiceData.toString());
 
             for (int i = 0; i < voiceData.size(); i++) {    // builds possible words to string
                 Log.d(TAG, "result " + voiceData.get(i));
@@ -175,7 +174,7 @@ public class MainActivity extends Activity implements OnClickListener {
                 Log.d(TAG, "result " + str);
             }
             useVoiceInput(str);
-            mText.setText("results: " + String.valueOf(voiceData.size()));
+//            mText.setText("results: " + String.valueOf(voiceData.size()));
             setButton();
         }
 
@@ -188,12 +187,11 @@ public class MainActivity extends Activity implements OnClickListener {
             Log.d(TAG, "onEvent " + eventType);
         }
 
-        /* changes sothat speakbutton no longer in in active status
-                andby that returns to inactive status -> color, state and so on.. */
+        /* changes so that speakbutton no longer in in active status
+                and by that returns to inactive status -> color, state and so on.. */
 
         public void setButton() {
             speakButton.setSelected(false);
-            speakButton.setText("Speak");
         }
     }
 
@@ -201,7 +199,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
     //lyssnaren som händer när man klickar på knappen speak.
     public void onClick(View v) {
-        mText.setText("Speak now..");
+        mText.setText("Say help to see available commands");
         speakButton.setSelected(true);
         answerText.setText(" ");
         /*
@@ -299,13 +297,15 @@ public class MainActivity extends Activity implements OnClickListener {
 
         }else if ((str.contains("show") || str.contains("Tell") || str.contains("What")) && str.contains("time")) {//show time
             showTime();
-        } else if (str.contains("date")) {//show date
+        } else if ((str.contains("show") || str.contains("Tell") || str.contains("What")) && str.contains("date")) {//show date
             String currentDateTimeString = DateFormat.getDateInstance().format(new Date());
             answerText.setText(currentDateTimeString);
         } else if (str.contains("help")) {//get help message
             showHelp();
+        } else if(str.contains("xx")) {
+            answerText.setText("An error occured, try again!");
         } else {            //incase no available command
-            answerText.setText("I'm sorry. I'm afraid I can't doo that.");
+                answerText.setText("I'm sorry. I'm afraid I can't doo that.");
 
         }
 
@@ -316,8 +316,12 @@ public class MainActivity extends Activity implements OnClickListener {
     //----------------------------------------------------------------------------------------------
 
     public void showHelp() {
-        String help = "You can turn lights on or off. Show temperature in the room. Or show today's date or time.";
+        String help = "You can turn lights on or off. Show temperature, or show today's date or time.";
         answerText.setText(help);
+        mText.setText("Light 1/2 on/off\n" +
+                "IS light 1/2 on/off\n" +
+                "Temperature inside/outside\n" +
+                "Show/tell/what time/date\n");
         String sayThis = answerText.getText().toString();
         hal.speak(sayThis, TextToSpeech.QUEUE_FLUSH, null);
     }
