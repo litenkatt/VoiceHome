@@ -6,6 +6,7 @@ package projekt.iot.voicehome;
  * @author Tove de Verdier
  * @author Ninni Hörnaeus
  * @author Marcus Warglo
+ *
  */
 
 import android.app.Activity;
