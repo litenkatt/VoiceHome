@@ -117,12 +117,13 @@ public class MainActivity extends Activity implements OnClickListener {
     //----------------------------------------------------------------------------------------------
 
     public void greeting() {
-        String greeting = "Welcome\nPress the button to give voice command or ask for help on what to do";
-        //   hal.speak(greeting, TextToSpeech.QUEUE_FLUSH, null);
-        Context context = getApplicationContext();
-        int duration = Toast.LENGTH_LONG;
-        Toast greetToast = Toast.makeText(context, greeting, duration);
-        greetToast.show();
+        String greeting = "Welcome! \nPress the button to give voice command or ask for help on what to do.";
+        hal.speak(greeting, TextToSpeech.QUEUE_FLUSH, null);
+//        Context context = getApplicationContext();
+//        int duration = Toast.LENGTH_LONG;
+//        Toast greetToast = Toast.makeText(context, greeting, duration);
+//        greetToast.show();
+        mText.setText(greeting);
 
     }
 
