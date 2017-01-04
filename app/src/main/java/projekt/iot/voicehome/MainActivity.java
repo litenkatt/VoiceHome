@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -201,7 +202,6 @@ public class MainActivity extends Activity implements OnClickListener {
     public void onClick(View v) {
         mText.setText("Speak now..");
         speakButton.setSelected(true);
-        speakButton.setText("Listening...");
         answerText.setText(" ");
         /*
         With this we change so the button speakButton goes into selected state, and holds this state
