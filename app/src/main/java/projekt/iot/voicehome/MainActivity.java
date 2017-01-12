@@ -57,10 +57,8 @@ import ch.ethz.ssh2.StreamGobbler;
 public class MainActivity extends Activity implements OnClickListener {
 
     private TextView mText;
-    private TextView resText;
-    private TextView answerText;
     private SpeechRecognizer sr;
-    private static final String TAG = "SpeechStuff"; //only for log
+    private static final String TAG = "VoiceHome"; //only for log
     private Button speakButton;
     private String temp = null;
     private boolean light1 = false;
@@ -68,6 +66,8 @@ public class MainActivity extends Activity implements OnClickListener {
     private CountDownTimer newtimer = null;
     private TextToSpeech hal;
     private ProgressDialog progress;
+
+    //----------------------------------------------------------------------------------------------
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -78,9 +78,6 @@ public class MainActivity extends Activity implements OnClickListener {
         speakButton.setOnClickListener(this);
 
         mText = (TextView) findViewById(R.id.textView1);
-        resText = (TextView) findViewById(R.id.textView2);
-        answerText = (TextView) findViewById(R.id.textView3);
-
         sr = SpeechRecognizer.createSpeechRecognizer(this);
         sr.setRecognitionListener(new Lis());
         //Code to test available internet status before attempting to connect
@@ -119,10 +116,6 @@ public class MainActivity extends Activity implements OnClickListener {
     public void greeting() {
         String greeting = "Welcome! \nPress the button to give voice command or ask for help on what to do.";
         hal.speak(greeting, TextToSpeech.QUEUE_FLUSH, null);
-//        Context context = getApplicationContext();
-//        int duration = Toast.LENGTH_LONG;
-//        Toast greetToast = Toast.makeText(context, greeting, duration);
-//        greetToast.show();
         mText.setText(greeting);
 
     }
@@ -166,7 +159,6 @@ public class MainActivity extends Activity implements OnClickListener {
             voiceData = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION); //creates arraylist of all possible results from voiceinput
             Log.d(TAG, voiceData.toString());
 
-            resText.setText("What you might have said: \n" + voiceData.toString());
 
             for (int i = 0; i < voiceData.size(); i++) {    // builds possible words to string
                 Log.d(TAG, "result " + voiceData.get(i));
@@ -199,9 +191,8 @@ public class MainActivity extends Activity implements OnClickListener {
 
     //lyssnaren som händer när man klickar på knappen speak.
     public void onClick(View v) {
-        mText.setText("Say help to see available commands");
         speakButton.setSelected(true);
-        answerText.setText(" ");
+        mText.setText("Listening...");
         /*
         With this we change so the button speakButton goes into selected state, and holds this state
         for as long as the process is executed by the buttonlistener. we then manually return the button to
@@ -250,11 +241,11 @@ public class MainActivity extends Activity implements OnClickListener {
             System.out.println("Exitcode: " + sess.getExitStatus());
             sess.close();
             conn.close();
-            answerText.setText("Connected");
+            mText.setText("Connected");
         } catch (IOException e) {
 //            e.printStackTrace(System.err);
 //            System.exit(2);
-            answerText.setText("Couldn´t connect");
+            mText.setText("Couldn´t connect");
         }
         return total.toString();
     }
@@ -280,7 +271,8 @@ public class MainActivity extends Activity implements OnClickListener {
     //----------------------------------------------------------------------------------------------
 
     public void useVoiceInput(String str) {
-        answerText.setText("");
+        mText.setText("");
+        String sayThis = "nothing";
         if (newtimer != null) //if we've checked time before and its running, cancel it
             newtimer.cancel();
         /* takes in string to compare to available commands in the system  */
@@ -291,7 +283,7 @@ public class MainActivity extends Activity implements OnClickListener {
                 setLamp(str);
             }
         } else if (str.contains("temperature") && !str.contains("outside")) {
-            answerText.setText(temp);
+            mText.setText(temp);
         }else if (str.contains("temperature") && str.contains("outside")) {
             new PostClass(this).execute();
 
@@ -299,31 +291,31 @@ public class MainActivity extends Activity implements OnClickListener {
             showTime();
         } else if ((str.contains("show") || str.contains("Tell") || str.contains("What")) && str.contains("date")) {//show date
             String currentDateTimeString = DateFormat.getDateInstance().format(new Date());
-            answerText.setText(currentDateTimeString);
+            mText.setText(currentDateTimeString);
         } else if (str.contains("help")) {//get help message
-            showHelp();
+            sayThis = showHelp().toString();
         } else if(str.contains("xx")) {
-            answerText.setText("An error occured, try again!");
+            mText.setText("An error occured, try again!");
         } else {            //incase no available command
-                answerText.setText("I'm sorry. I'm afraid I can't doo that.");
+                mText.setText("I'm sorry. I'm afraid I can't doo that.");
 
         }
+        if(sayThis.equals("nothing")){
+             sayThis = mText.getText().toString();
 
-        String sayThis = answerText.getText().toString();
+        }
         hal.speak(sayThis, TextToSpeech.QUEUE_FLUSH, null);
     }
 
     //----------------------------------------------------------------------------------------------
 
-    public void showHelp() {
+    public String showHelp() {
         String help = "You can turn lights on or off. Show temperature, or show today's date or time.";
-        answerText.setText(help);
         mText.setText("Light 1/2 on/off\n" +
                 "IS light 1/2 on/off\n" +
                 "Temperature inside/outside\n" +
                 "Show/tell/what time/date\n");
-        String sayThis = answerText.getText().toString();
-        hal.speak(sayThis, TextToSpeech.QUEUE_FLUSH, null);
+        return help;
     }
 
     //----------------------------------------------------------------------------------------------
@@ -331,13 +323,13 @@ public class MainActivity extends Activity implements OnClickListener {
 
     public void showTime() {
         String timeNow = DateFormat.getTimeInstance().format(new Date());
-        answerText.setText(timeNow);
-        String sayThis = answerText.getText().toString();
+        mText.setText(timeNow);
+        String sayThis = mText.getText().toString();
         hal.speak(sayThis, TextToSpeech.QUEUE_FLUSH, null);
         newtimer = new CountDownTimer(1000000000, 1000) {
             public void onTick(long millisUntilFinished) {
                 Calendar c = Calendar.getInstance();
-                answerText.setText(c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND));
+                mText.setText(c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND));
             }
 
             public void onFinish() {
@@ -356,30 +348,30 @@ public class MainActivity extends Activity implements OnClickListener {
         if (str.contains("one")) {
             if (light1) {
                 if (str.contains("on") || str.contains("own")) {
-                    answerText.setText("Yes");
+                    mText.setText("Yes");
                 } else if (str.contains("off")) {
-                    answerText.setText("No");
+                    mText.setText("No");
                 }
             } else {
                 if (str.contains("off") || str.contains("of")) {
-                    answerText.setText("Yes");
+                    mText.setText("Yes");
                 } else if (str.contains("on")) {
-                    answerText.setText("No");
+                    mText.setText("No");
                 }
             }
 
         } else if (str.contains("two") || str.contains("2") || str.contains("to")) {
             if (light2) {
                 if (str.contains("on") || str.contains("own")) {
-                    answerText.setText("Yes");
+                    mText.setText("Yes");
                 } else if (str.contains("off")) {
-                    answerText.setText("No");
+                    mText.setText("No");
                 }
             } else {
                 if (str.contains("off") || str.contains("of")) {
-                    answerText.setText("Yes");
+                    mText.setText("Yes");
                 } else if (str.contains("on")) {
-                    answerText.setText("No");
+                    mText.setText("No");
                 }
             }
         }
@@ -395,21 +387,21 @@ public class MainActivity extends Activity implements OnClickListener {
             if (str.contains("off") || str.contains("of")) {
                 light1 = false;
                 run("tdtool --off 1");
-                answerText.setText("Light 1 set to off");
+                mText.setText("Light 1 set to off");
             } else if (str.contains("on") || str.contains("own")) {
                 light1 = true;
                 run("tdtool --on 1");
-                answerText.setText("Light 1 set to on");
+                mText.setText("Light 1 set to on");
             }
         } else if (str.contains("two") || str.contains("2") || str.contains("to")) {
             if (str.contains("off") || str.contains("of")) {
                 light2 = false;
                 run("tdtool --off 2");
-                answerText.setText("Light 2 set to off");
+                mText.setText("Light 2 set to off");
             } else if (str.contains("on") || str.contains("own")) {
                 light2 = true;
                 run("tdtool --on 2");
-                answerText.setText("Light 2 set to on");
+                mText.setText("Light 2 set to on");
             }
         } else if (str.contains("all") || str.contains("al") || str.contains("all")) {
             if (str.contains("off") || str.contains("of")) {
@@ -417,13 +409,13 @@ public class MainActivity extends Activity implements OnClickListener {
                 run("tdtool --off 2");
                 light1 = false;
                 run("tdtool --off 1");
-                answerText.setText("All lights set to off");
+                mText.setText("All lights set to off");
             } else if (str.contains("on") || str.contains("own")) {
                 light1 = true;
                 run("tdtool --on 1");
                 light2 = true;
                 run("tdtool --on 2");
-                answerText.setText("All lights set to on");
+                mText.setText("All lights set to on");
             }
         }
     }
@@ -514,7 +506,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
         protected void onPostExecute(String result) {
             result = result+"\u00b0 outside";
-            answerText.setText(result);
+            mText.setText(result);
             hal.speak(result, TextToSpeech.QUEUE_FLUSH, null);
 
             progress.dismiss();
