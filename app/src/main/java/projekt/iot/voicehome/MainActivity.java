@@ -92,7 +92,7 @@ public class MainActivity extends Activity implements OnClickListener {
             Log.d(TAG, networkInfo.toString());
         } else { //if internetconnection is unavailable -> toast meddelande with fail
             Context context = getApplicationContext();
-            CharSequence text = "lol internet failz!";
+            CharSequence text = "You don't have an internet connection";
             int duration = Toast.LENGTH_LONG;
             Toast toast = Toast.makeText(context, text, duration);
             toast.show();
@@ -213,9 +213,9 @@ public class MainActivity extends Activity implements OnClickListener {
     //----------------------------------------------------------------------------------------------
 
     public String run(String command) { //command = the SSH value we want to send
-        String hostname = "213.89.203.106";                       //TODO hard-code our pi's ip here..
-        String username = "pi";                     //TODO hard-code our pi's username here..
-        String password = "raspberryiot11";           //TODO hard-code our pi's password, here..
+        String hostname = "1";
+        String username = "username";
+        String password = "password";         
         StringBuilder total = new StringBuilder();
         try {
             //code to avoid Network error massage
